@@ -1,0 +1,28 @@
+//PLACE THIS IN YOUR function.php of your divi child theme
+//adding preload field into divi video module
+add_filter('et_pb_all_fields_unprocessed_et_pb_video','add_video_attributes');
+function add_video_attributes($fields_unprocessed){
+	$fields =[];
+	$fields['preload'] = [
+	'label' => 'preload',
+	'type' => 'yes_no_button',
+	'option_category' => 'configuration',
+	'options' => array(
+		'off' => 'off',
+		'on' => 'on',
+	),
+	'toggle_slug' => 'main_content',
+	];
+	return array_merge($fields_unprocessed, $fields);
+}
+//this will disable/enable preload="none" to your video module through the visual builder previuously added field
+add_filter('et_module_shortcode_output','no_video_preload',10,3);
+function no_video_preload($output, $render_slug, $module){
+	if('et_pb_video' !== $render_slug ) return $output; //ritorna il normale output per tutti i moduli tranne il modulo video
+	if ( is_array( $output ) ) { return $output; } //serve per evitare di compromettere il modulo nel visual builder
+	$preload = $module->props['preload']; //mette in variabile le opzioni del campo creato sopra(on o off)
+	if($preload !== 'off') {
+	$output = preg_replace('/(<video\b[^><]*)>/i', '$1 preload="none">', $output); //regex per aggiungere l attributo preload
+	}
+	return $output;
+}
